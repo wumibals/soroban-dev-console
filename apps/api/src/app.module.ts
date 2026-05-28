@@ -10,6 +10,10 @@ import { ContributorVerificationModule } from "./modules/contributor-verificatio
 import { AppealDecisionsModule } from "./modules/appeal-decisions/appeal-decisions.module.js";
 import { NotificationsModule } from "./modules/notifications/notifications.module.js";
 import { PointLedgerModule } from "./modules/point-ledger/point-ledger.module.js";
+import { VerificationModule } from "./modules/verification/verification.module.js";
+import { ReviewContextModule } from "./modules/review-context/review-context.module.js";
+import { BackgroundJobModule } from "./modules/jobs/background-job.module.js";
+import { WaveModule } from "./modules/wave/wave.module.js";
 
 @Module({
   imports: [
@@ -27,6 +31,10 @@ import { PointLedgerModule } from "./modules/point-ledger/point-ledger.module.js
     AppealDecisionsModule,
     NotificationsModule,
     PointLedgerModule,
+    VerificationModule,
+    ReviewContextModule,
+    BackgroundJobModule,
+    WaveModule,
   ]
 })
 export class AppModule {}
