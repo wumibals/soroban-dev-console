@@ -6,6 +6,10 @@ import { RuntimeConfigModule } from "./modules/runtime-config/runtime-config.mod
 import { FixtureManifestModule } from "./modules/fixture-manifest/fixture-manifest.module.js";
 import { SharesModule } from "./modules/shares/shares.module.js";
 import { WorkspacesModule } from "./modules/workspaces/workspaces.module.js";
+import { ContributorVerificationModule } from "./modules/contributor-verification/contributor-verification.module.js";
+import { AppealDecisionsModule } from "./modules/appeal-decisions/appeal-decisions.module.js";
+import { NotificationsModule } from "./modules/notifications/notifications.module.js";
+import { PointLedgerModule } from "./modules/point-ledger/point-ledger.module.js";
 
 @Module({
   imports: [
@@ -18,7 +22,11 @@ import { WorkspacesModule } from "./modules/workspaces/workspaces.module.js";
     RuntimeConfigModule,
     FixtureManifestModule,
     SharesModule,
-    WorkspacesModule
+    WorkspacesModule,
+    ContributorVerificationModule,
+    AppealDecisionsModule,
+    NotificationsModule,
+    PointLedgerModule,
   ]
 })
 export class AppModule {}
