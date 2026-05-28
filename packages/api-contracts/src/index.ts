@@ -168,6 +168,72 @@ export interface CreateSharePayload {
   expiresInSeconds?: number;
 }
 
+// ── Support Tickets (BE-215) ──────────────────────────────────────────────────
+
+export type TicketCategory = "verification" | "payout" | "appeal" | "bug" | "abuse";
+export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+export type TicketPriority = "low" | "normal" | "high" | "urgent";
+
+export interface SupportTicketSummary {
+  id: string;
+  subject: string;
+  category: TicketCategory;
+  status: TicketStatus;
+  priority: TicketPriority;
+  reporterKey: string;
+  assigneeKey: string | null;
+  tags: string[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface CreateSupportTicketPayload {
+  subject: string;
+  body: string;
+  category: TicketCategory;
+  priority?: TicketPriority;
+  tags?: string[];
+}
+
+export interface UpdateSupportTicketPayload {
+  status?: TicketStatus;
+  priority?: TicketPriority;
+  assigneeKey?: string;
+  tags?: string[];
+}
+
+// ── Maintainer Dashboard (BE-217) ─────────────────────────────────────────────
+
+export interface TriageQueueView {
+  total: number;
+  byCategory: Record<string, SupportTicketSummary[]>;
+}
+
+export interface AppealListView {
+  total: number;
+  tickets: SupportTicketSummary[];
+}
+
+export interface VerificationBottlenecksView {
+  total: number;
+  tickets: SupportTicketSummary[];
+}
+
+export interface BudgetView {
+  statusCounts: {
+    open: number;
+    inProgress: number;
+    resolved: number;
+    closed: number;
+  };
+  byCategory: Array<{ category: TicketCategory; count: number }>;
+}
+
+export interface MaintainerDashboardSummary {
+  triageQueue: TriageQueueView;
+  appealList: AppealListView;
+  verificationBottlenecks: VerificationBottlenecksView;
+  budgetView: BudgetView;
 // ── Contributor Verification (BE-206) ────────────────────────────────────────
 
 export type VerificationStatus = "pending" | "verified" | "failed" | "expired";

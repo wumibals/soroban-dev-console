@@ -93,6 +93,27 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+/// BE-215: Support ticket with category tagging and routing metadata for Wave 5 triage.
+model SupportTicket {
+  id          String   @id @default(cuid())
+  subject     String
+  body        String
+  category    String   /// verification | payout | appeal | bug | abuse
+  status      String   @default("open") /// open | in_progress | resolved | closed
+  priority    String   @default("normal") /// low | normal | high | urgent
+  reporterKey String   @map("reporter_key")
+  assigneeKey String?  @map("assignee_key")
+  tags        String   @default("[]") /// JSON-encoded string[]
+  metadata    Json?
+  resolvedAt  DateTime? @map("resolved_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category, status])
+  @@index([reporterKey])
+  @@index([status, priority])
+  @@index([createdAt])
+  @@map("support_tickets")
 /// BE-206: Idempotent record of a contributor verification event from an external provider.
 model VerificationEvent {
   id            String   @id @default(cuid())
