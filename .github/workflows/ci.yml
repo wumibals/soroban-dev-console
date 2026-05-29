@@ -277,6 +277,29 @@ jobs:
         id: integrity
         run: npm run check-integrity
 
+      - name: Validate runbooks and observability docs
+        id: runbooks
+        run: |
+          MISSING=()
+          for f in docs/runbooks.md docs/observability.md; do
+            [ -f "$f" ] || MISSING+=("$f")
+          done
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "❌ Missing required docs: ${MISSING[*]}"
+            exit 1
+          fi
+          echo "✅ Runbooks and observability docs present"
+
+      - name: Validate service health script
+        id: health_script
+        run: |
+          if [ ! -f "scripts/check-service-health.sh" ]; then
+            echo "❌ scripts/check-service-health.sh is missing"
+            exit 1
+          fi
+          bash -n scripts/check-service-health.sh
+          echo "✅ scripts/check-service-health.sh syntax OK"
+
       - name: Write job summary
         if: always()
         run: |
@@ -291,6 +314,16 @@ jobs:
             echo "✅ **Dependency integrity check**: passed" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Dependency integrity check**: failed — lockfile or workspace dependency versions are inconsistent. Run \`npm run check-integrity\` locally to see details." >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.runbooks.outcome }}" = "success" ]; then
+            echo "✅ **Runbooks / observability docs**: present" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Runbooks / observability docs**: missing — ensure docs/runbooks.md and docs/observability.md exist." >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.health_script.outcome }}" = "success" ]; then
+            echo "✅ **Service health script**: syntax OK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Service health script**: missing or invalid — ensure scripts/check-service-health.sh exists and has valid bash syntax." >> $GITHUB_STEP_SUMMARY
           fi
 
   required-checks:
