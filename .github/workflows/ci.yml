@@ -340,7 +340,9 @@ jobs:
           fi
           echo "✅ All required checks passed."
   # DEVOPS-212: Wave-prep gate — runs the full release-readiness sequence.
-  # Only triggers on devops-relevant file changes or push to main.
+  # For audit-ready artifacts (commit range, check logs, health notes), use the
+  # Release Candidate workflow or: npm run release-evidence -- --wave <id>
+  # See docs/release-evidence-bundle.md (DEVOPS-216).
   wave-prep:
     name: Wave Prep
     needs: [changes, devops]

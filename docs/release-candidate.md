@@ -42,9 +42,22 @@ gh workflow run release-candidate.yml \
   --field wave_label=wave-5
 ```
 
-## RC Manifest
+## Release evidence bundle (DEVOPS-216)
 
-On success, `rc-gate` uploads a `rc-manifest-<run_id>` artifact (retained 90 days) containing `release-candidate.json`:
+On success, `rc-gate` also runs `scripts/generate-release-evidence.ts` and uploads a **`release-evidence-<run_id>`** artifact (90 days) containing:
+
+- `manifest.json` — structured metadata, git range, check results, CI layers
+- `EVIDENCE.md` — maintainer/auditor report with repro commands
+- `checks/*.log` — full validation output
+- `git/` — commit range files
+- `service-health.json` — health probe notes
+- `release-evidence-bundle.tar.gz` — portable archive
+
+See [release-evidence-bundle.md](./release-evidence-bundle.md) for local usage and failure interpretation.
+
+## RC Manifest (legacy)
+
+`rc-gate` uploads `manifest.json` from the evidence bundle as `rc-manifest-<run_id>` for backward compatibility. The canonical format matches:
 
 ```json
 {
@@ -100,4 +113,5 @@ If any layer fails, fix the root cause on the release branch, push, and re-run. 
 |----------|-----------|----------|
 | `rc-bundle-analysis-<run_id>` | 30 days | Next.js bundle analysis from the web build |
 | `rc-playwright-report-<run_id>` | 30 days | Playwright HTML report from E2E tests |
-| `rc-manifest-<run_id>` | 90 days | JSON manifest with layer results and metadata |
+| `release-evidence-<run_id>` | 90 days | Full evidence bundle (manifest, logs, git range, tarball) |
+| `rc-manifest-<run_id>` | 90 days | `manifest.json` only (compat alias) |

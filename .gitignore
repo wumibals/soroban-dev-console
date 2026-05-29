@@ -39,3 +39,7 @@ Thumbs.db
 # Optional: coverage
 coverage
 .backups/
+
+# DEVOPS-216: release evidence bundles (generated locally or in CI)
+release-evidence/
+release-evidence-bundle.tar.gz

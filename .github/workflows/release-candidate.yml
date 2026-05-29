@@ -295,36 +295,79 @@ jobs:
             echo "- $icon **$job**: $result" >> $GITHUB_STEP_SUMMARY
           done
 
-      - name: Package RC manifest
-        if: needs.rc-gate.result != 'failure'
-        env:
-          WAVE: ${{ github.event.inputs.wave_label || github.ref_name }}
+      - name: Setup Node for evidence bundle
+        if: success()
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies for evidence bundle
+        if: success()
+        run: npm ci
+
+      - name: Generate Prisma client (evidence checks)
+        if: success()
+        run: npm run prisma:generate -w api
+
+      - name: Build shared packages (evidence checks)
+        if: success()
+        run: npx turbo run build --filter=./packages/*
+
+      - name: Write CI layer results
+        if: success()
         run: |
-          mkdir -p rc-manifest
-          cat > rc-manifest/release-candidate.json <<EOF
+          cat > /tmp/ci-layer-results.json <<EOF
           {
-            "wave": "$WAVE",
-            "sha": "${{ github.sha }}",
-            "ref": "${{ github.ref }}",
-            "run_id": "${{ github.run_id }}",
-            "actor": "${{ github.actor }}",
-            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "layers": {
-              "devops": "${{ needs.devops.result }}",
-              "web": "${{ needs.web.result }}",
-              "api": "${{ needs.api.result }}",
-              "api-schema": "${{ needs.api-schema.result }}",
-              "api-contracts": "${{ needs.api-contracts.result }}",
-              "contracts": "${{ needs.contracts.result }}",
-              "e2e": "${{ needs.e2e.result }}"
-            }
+            "devops": "${{ needs.devops.result }}",
+            "web": "${{ needs.web.result }}",
+            "api": "${{ needs.api.result }}",
+            "api-schema": "${{ needs.api-schema.result }}",
+            "api-contracts": "${{ needs.api-contracts.result }}",
+            "contracts": "${{ needs.contracts.result }}",
+            "e2e": "${{ needs.e2e.result }}"
           }
           EOF
 
-      - name: Upload RC manifest
+      - name: Generate release evidence bundle
+        if: success()
+        env:
+          WAVE: ${{ github.event.inputs.wave_label || github.ref_name }}
+        run: |
+          npx tsx scripts/generate-release-evidence.ts \
+            --wave "$WAVE" \
+            --base origin/main \
+            --quick \
+            --layer-results /tmp/ci-layer-results.json \
+            --github-run-id "${{ github.run_id }}" \
+            --github-sha "${{ github.sha }}" \
+            --github-ref "${{ github.ref }}" \
+            --github-actor "${{ github.actor }}" \
+            --github-repository "${{ github.repository }}"
+
+      - name: Write evidence summary
+        if: always()
+        run: |
+          if [ -f release-evidence/EVIDENCE.md ]; then
+            echo "## Release Evidence Bundle" >> $GITHUB_STEP_SUMMARY
+            cat release-evidence/EVIDENCE.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload release evidence bundle
         if: always()
         uses: actions/upload-artifact@v4
         with:
+          name: release-evidence-${{ github.run_id }}
+          path: |
+            release-evidence/
+            release-evidence-bundle.tar.gz
+          retention-days: 90
+
+      # Legacy manifest path for consumers expecting rc-manifest/<run_id>
+      - name: Upload RC manifest (compat)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
           name: rc-manifest-${{ github.run_id }}
-          path: rc-manifest/
+          path: release-evidence/manifest.json
           retention-days: 90
