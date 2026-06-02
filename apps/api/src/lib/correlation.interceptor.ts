@@ -15,7 +15,11 @@ import {
 import { Request, Response } from "express";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { generateCorrelationId, runWithCorrelation } from "./request-context.js";
+import {
+  buildStructuredLogEntry,
+  generateCorrelationId,
+  runWithCorrelation,
+} from "./request-context.js";
 
 @Injectable()
 export class CorrelationInterceptor implements NestInterceptor {
@@ -32,7 +36,15 @@ export class CorrelationInterceptor implements NestInterceptor {
 
     // Log request with correlation ID
     console.log(
-      `[${correlationId}] ${req.method} ${req.url}`,
+      JSON.stringify(
+        buildStructuredLogEntry({
+          level: "info",
+          correlationId,
+          message: "request.received",
+          method: req.method,
+          path: req.url,
+        }),
+      ),
     );
 
     // Run the handler within the correlation context
@@ -41,12 +53,31 @@ export class CorrelationInterceptor implements NestInterceptor {
         tap({
           next: (data) => {
             console.log(
-              `[${correlationId}] Response sent`,
+              JSON.stringify(
+                buildStructuredLogEntry({
+                  level: "info",
+                  correlationId,
+                  message: "request.completed",
+                  method: req.method,
+                  path: req.url,
+                  statusCode: res.statusCode,
+                }),
+              ),
             );
           },
           error: (error) => {
             console.error(
-              `[${correlationId}] Error: ${error?.message || 'Unknown error'}`,
+              JSON.stringify(
+                buildStructuredLogEntry({
+                  level: "error",
+                  correlationId,
+                  message: "request.failed",
+                  method: req.method,
+                  path: req.url,
+                  statusCode: res.statusCode,
+                  error: error?.message || "Unknown error",
+                }),
+              ),
             );
           },
         }),

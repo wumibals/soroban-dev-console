@@ -17,6 +17,16 @@ interface RequestContext {
   correlationId: string;
 }
 
+export interface StructuredLogEntry {
+  level: "info" | "error";
+  correlationId: string;
+  message: string;
+  method?: string;
+  path?: string;
+  statusCode?: number;
+  error?: string;
+}
+
 const asyncLocalStorage = new AsyncLocalStorage<RequestContext>();
 
 /**
@@ -45,4 +55,18 @@ export function runWithCorrelation<T>(
  */
 export function generateCorrelationId(): string {
   return randomUUID();
+}
+
+export function buildStructuredLogEntry(
+  entry: Omit<StructuredLogEntry, "correlationId"> & { correlationId?: string },
+): StructuredLogEntry {
+  return {
+    level: entry.level,
+    correlationId: entry.correlationId ?? "unknown",
+    message: entry.message,
+    method: entry.method,
+    path: entry.path,
+    statusCode: entry.statusCode,
+    error: entry.error,
+  };
 }
