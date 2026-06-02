@@ -5,6 +5,7 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "./prisma.service.js";
+import { redactJsonValue, redactText } from "../modules/security/services/redaction.service.js";
 
 export interface AuditEntry {
   actor: string;
@@ -26,8 +27,8 @@ export class AuditService {
         action: entry.action,
         resourceType: entry.resourceType,
         resourceId: entry.resourceId,
-        summary: entry.summary ?? null,
-        metadata: entry.metadata ?? Prisma.JsonNull,
+        summary: entry.summary ? redactText(entry.summary) : null,
+        metadata: entry.metadata ? (redactJsonValue(entry.metadata) as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
     });
   }
