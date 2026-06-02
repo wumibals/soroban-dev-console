@@ -10,6 +10,7 @@
 
 import { Injectable, Logger } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { AuditService } from "./audit.service.js";
 import { PrismaService } from "./prisma.service.js";
 
 export type JobStatus = "pending" | "running" | "completed" | "failed" | "dead";
@@ -40,7 +41,10 @@ export class BackgroundJobService {
   /** Lock duration in milliseconds — prevents double-processing under concurrent workers */
   private readonly LOCK_DURATION_MS = 30_000;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
 
   async enqueue(options: EnqueueJobOptions): Promise<JobRecord> {
     const record = await this.prisma.backgroundJob.create({
@@ -53,6 +57,14 @@ export class BackgroundJobService {
       },
     });
     this.logger.debug(`Enqueued job ${record.id} (${record.type})`);
+    await this.audit.log({
+      actor: "system:background-jobs",
+      action: "job.enqueued",
+      resourceType: "background_job",
+      resourceId: record.id,
+      summary: `Enqueued ${record.type} job`,
+      metadata: { type: record.type, maxAttempts: record.maxAttempts },
+    });
     return record;
   }
 
@@ -97,6 +109,7 @@ export class BackgroundJobService {
       return null;
     }
 
+    this.logger.debug(`Claimed job ${candidate.id} (${candidate.type})`);
     return this.prisma.backgroundJob.findUnique({ where: { id: candidate.id } }) as Promise<JobRecord>;
   }
 
@@ -111,6 +124,13 @@ export class BackgroundJobService {
       },
     });
     this.logger.debug(`Job ${id} completed`);
+    await this.audit.log({
+      actor: "system:background-jobs",
+      action: "job.completed",
+      resourceType: "background_job",
+      resourceId: id,
+      summary: "Background job completed",
+    });
   }
 
   async fail(id: string, error: string): Promise<void> {
@@ -127,6 +147,40 @@ export class BackgroundJobService {
       },
     });
     this.logger.warn(`Job ${id} ${isDead ? "dead (max attempts)" : "failed"}: ${error}`);
+    await this.audit.log({
+      actor: "system:background-jobs",
+      action: isDead ? "job.dead" : "job.failed",
+      resourceType: "background_job",
+      resourceId: id,
+      summary: isDead ? "Background job exhausted retries" : "Background job failed",
+      metadata: { error },
+    });
+  }
+
+  async replay(id: string): Promise<JobRecord | null> {
+    const job = await this.prisma.backgroundJob.findUnique({ where: { id } });
+    if (!job || job.status !== "dead") return null;
+
+    await this.prisma.backgroundJob.update({
+      where: { id },
+      data: {
+        status: "pending",
+        attempts: 0,
+        lastError: null,
+        lockedUntil: null,
+        scheduledAt: new Date(),
+      },
+    });
+
+    await this.audit.log({
+      actor: "system:background-jobs",
+      action: "job.replayed",
+      resourceType: "background_job",
+      resourceId: id,
+      summary: "Background job returned to the pending queue",
+    });
+
+    return this.prisma.backgroundJob.findUnique({ where: { id } }) as Promise<JobRecord>;
   }
 
   async findByStatus(status: JobStatus, limit = 50): Promise<JobRecord[]> {

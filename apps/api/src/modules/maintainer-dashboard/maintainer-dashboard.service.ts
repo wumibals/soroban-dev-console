@@ -11,6 +11,7 @@ export class DashboardQueryDto {
 @Injectable()
 export class MaintainerDashboardService {
   constructor(private readonly prisma: PrismaService) {}
+  private summaryCache: { refreshedAt: string; data: unknown } | null = null;
 
   /** Triage queue: open/in_progress tickets grouped by category and priority. */
   async getTriageQueue() {
@@ -106,6 +107,10 @@ export class MaintainerDashboardService {
 
   /** Summary: combines all read-model views into a single dashboard payload. */
   async getSummary() {
+    if (this.summaryCache) {
+      return this.summaryCache.data;
+    }
+
     const [triageQueue, appealList, verificationBottlenecks, budgetView] =
       await Promise.all([
         this.getTriageQueue(),
@@ -114,6 +119,15 @@ export class MaintainerDashboardService {
         this.getBudgetView(),
       ]);
 
-    return { triageQueue, appealList, verificationBottlenecks, budgetView };
+    const data = { triageQueue, appealList, verificationBottlenecks, budgetView };
+    this.summaryCache = { refreshedAt: new Date().toISOString(), data };
+    return data;
+  }
+
+  /** Refreshes the cached dashboard read-model in one pass. */
+  async refreshSummary() {
+    this.summaryCache = null;
+    const data = await this.getSummary();
+    return { refreshedAt: this.summaryCache?.refreshedAt ?? new Date().toISOString(), data };
   }
 }

@@ -13,6 +13,12 @@ export class MaintainerDashboardController {
     return this.service.getSummary();
   }
 
+  /** GET /maintainer-dashboard/refresh — rebuild the cached dashboard read model */
+  @Get("refresh")
+  refreshSummary() {
+    return this.service.refreshSummary();
+  }
+
   /** GET /maintainer-dashboard/triage-queue */
   @Get("triage-queue")
   getTriageQueue() {

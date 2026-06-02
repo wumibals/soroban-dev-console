@@ -110,6 +110,8 @@ model SupportTicket {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@index([category, status])
+  @@index([category, status, createdAt])
+  @@index([status, createdAt])
   @@index([reporterKey])
   @@index([status, priority])
   @@index([createdAt])

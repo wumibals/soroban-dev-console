@@ -29,7 +29,8 @@ test("BackgroundJobService: enqueues a job", async () => {
       fields: { maxAttempts: {} },
     },
   } as any;
-  const service = new BackgroundJobService(prisma);
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
   const result = await service.enqueue({ type: "sync", payload: { foo: "bar" } });
   assert.equal(result.type, "sync");
 });
@@ -41,7 +42,8 @@ test("BackgroundJobService: returns null when no claimable job exists", async ()
       fields: { maxAttempts: {} },
     },
   } as any;
-  const service = new BackgroundJobService(prisma);
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
   const result = await service.claimNext("sync");
   assert.equal(result, null);
 });
@@ -54,7 +56,8 @@ test("BackgroundJobService: returns null when another worker claims the job firs
       fields: { maxAttempts: {} },
     },
   } as any;
-  const service = new BackgroundJobService(prisma);
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
   const result = await service.claimNext("sync");
   assert.equal(result, null);
 });
@@ -68,7 +71,8 @@ test("BackgroundJobService: marks job as dead after max attempts", async () => {
       fields: { maxAttempts: {} },
     },
   } as any;
-  const service = new BackgroundJobService(prisma);
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
   await service.fail("j1", "timeout");
   assert.equal(updatedData.status, "dead");
 });
@@ -82,7 +86,8 @@ test("BackgroundJobService: marks job as failed when attempts < maxAttempts", as
       fields: { maxAttempts: {} },
     },
   } as any;
-  const service = new BackgroundJobService(prisma);
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
   await service.fail("j1", "network error");
   assert.equal(updatedData.status, "failed");
 });
@@ -97,9 +102,26 @@ test("BackgroundJobService: returns job stats", async () => {
       fields: { maxAttempts: {} },
     },
   } as any;
-  const service = new BackgroundJobService(prisma);
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
   const stats = await service.getStats();
   assert.equal(stats.pending, 5);
   assert.equal(stats.completed, 10);
   assert.equal(stats.failed, 0);
+});
+
+test("BackgroundJobService: replays dead jobs back to pending", async () => {
+  let updatedData: Record<string, unknown> = {};
+  const prisma = {
+    backgroundJob: {
+      findUnique: async () => makeJob({ status: "dead" }),
+      update: async ({ data }: { data: Record<string, unknown> }) => { updatedData = data; return {}; },
+      fields: { maxAttempts: {} },
+    },
+  } as any;
+  const audit = { log: async () => undefined } as any;
+  const service = new BackgroundJobService(prisma, audit);
+  const replayed = await service.replay("j1");
+  assert.equal(updatedData.status, "pending");
+  assert.equal(replayed?.status, "pending");
 });
