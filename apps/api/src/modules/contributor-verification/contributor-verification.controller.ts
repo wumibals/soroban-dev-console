@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Put,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 import { OwnerKeyGuard } from "../../auth/owner-key.guard.js";

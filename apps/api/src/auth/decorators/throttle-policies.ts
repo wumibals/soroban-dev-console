@@ -19,3 +19,5 @@ export const THROTTLE_POLICIES = {
     windowSeconds: 300,
   },
 };
+
+export type ThrottlePolicyName = keyof typeof THROTTLE_POLICIES;
