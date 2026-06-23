@@ -2,16 +2,13 @@ import { Controller, Get, Post, Body, Param, Query, UseGuards } from "@nestjs/co
 import { OwnerKeyGuard } from "../../auth/owner-key.guard.js";
 import { BudgetService } from "./budget.service.js";
 import {
-  OrganizationBudgetSummary,
-  PointReservationSummary,
-  BudgetEventSummary,
-  BudgetMetrics,
-  GetBudgetMetricsQuery,
-  SetOrganizationBudgetPayload,
-  ReservePointsPayload,
-  ReleaseReservationPayload,
-  ReconcileBudgetPayload,
-} from "../../../packages/api-contracts/src/index.ts";
+  type BudgetMetrics,
+  type GetBudgetMetricsQuery,
+  type SetOrganizationBudgetPayload,
+  type ReservePointsPayload,
+  type ReleaseReservationPayload,
+  type ReconcileBudgetPayload,
+} from "@devconsole/api-contracts";
 
 @Controller("budget")
 @UseGuards(OwnerKeyGuard)

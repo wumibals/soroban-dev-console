@@ -60,6 +60,7 @@ export class BudgetService {
         points: reservation.points,
         status: reservation.status as ReservationStatus,
         createdAt: reservation.createdAt.toISOString(),
+        releasedAt: reservation.releasedAt?.toISOString() ?? null,
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

@@ -128,6 +128,8 @@ export class MaintainerDashboardService {
   async refreshSummary() {
     this.summaryCache = null;
     const data = await this.getSummary();
-    return { refreshedAt: this.summaryCache?.refreshedAt ?? new Date().toISOString(), data };
+    const refreshedAt = new Date().toISOString();
+    this.summaryCache = { refreshedAt, data };
+    return { refreshedAt, data };
   }
 }
