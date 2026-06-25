@@ -447,15 +447,18 @@ model AiMetricSnapshot {
 }
 
 
-/// AI-932: Onboarding digest for a new contributor.
-model OnboardingDigest {
-  id             String   @id @default(cuid())
-  contributorKey String   @unique @map("contributor_key")
-  sections       Json
-  digestText     String   @map("digest_text")
-  modelVersion   String   @map("model_version")
-  createdAt      DateTime @default(now()) @map("created_at")
+/// AI-927: Log analysis result from the assistant workflow.
+model LogAnalysisResult {
+  id               String   @id @default(cuid())
+  sessionId        String   @unique @map("session_id")
+  source           String
+  lineCount        Int      @map("line_count")
+  themes           Json
+  correlatedEvents Json     @map("correlated_events")
+  errorCount       Int      @map("error_count")
+  modelVersion     String   @map("model_version")
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  @@index([contributorKey])
-  @@map("onboarding_digests")
+  @@index([sessionId])
+  @@map("log_analysis_results")
 }
