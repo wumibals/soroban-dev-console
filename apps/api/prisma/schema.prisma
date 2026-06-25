@@ -447,16 +447,18 @@ model AiMetricSnapshot {
 }
 
 
-/// AI-934: Spec recommendation for a change set.
-model SpecRecommendation {
-  id              String   @id @default(cuid())
-  changeSetId     String   @unique @map("change_set_id")
-  changedFiles    Json     @map("changed_files")
-  recommendations Json
-  mustRunCount    Int      @map("must_run_count")
-  modelVersion    String   @map("model_version")
-  createdAt       DateTime @default(now()) @map("created_at")
+/// AI-927: Log analysis result from the assistant workflow.
+model LogAnalysisResult {
+  id               String   @id @default(cuid())
+  sessionId        String   @unique @map("session_id")
+  source           String
+  lineCount        Int      @map("line_count")
+  themes           Json
+  correlatedEvents Json     @map("correlated_events")
+  errorCount       Int      @map("error_count")
+  modelVersion     String   @map("model_version")
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  @@index([changeSetId])
-  @@map("spec_recommendations")
+  @@index([sessionId])
+  @@map("log_analysis_results")
 }
