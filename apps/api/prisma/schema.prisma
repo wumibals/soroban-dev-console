@@ -447,16 +447,18 @@ model AiMetricSnapshot {
 }
 
 
-/// AI-925: Plain-language explanation of a contract diff.
-model ContractDiffExplanation {
-  id            String   @id @default(cuid())
-  diffId        String   @unique @map("diff_id")
-  contractName  String   @map("contract_name")
-  explanations  Json
-  breakingCount Int      @map("breaking_count")
-  modelVersion  String   @map("model_version")
-  createdAt     DateTime @default(now()) @map("created_at")
+/// AI-927: Log analysis result from the assistant workflow.
+model LogAnalysisResult {
+  id               String   @id @default(cuid())
+  sessionId        String   @unique @map("session_id")
+  source           String
+  lineCount        Int      @map("line_count")
+  themes           Json
+  correlatedEvents Json     @map("correlated_events")
+  errorCount       Int      @map("error_count")
+  modelVersion     String   @map("model_version")
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  @@index([diffId])
-  @@map("contract_diff_explanations")
+  @@index([sessionId])
+  @@map("log_analysis_results")
 }
