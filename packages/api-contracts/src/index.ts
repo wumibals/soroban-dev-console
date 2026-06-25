@@ -403,6 +403,25 @@ export interface AppealTimingResult {
   appealDeadline: string;
 }
 
+// ── AI-206: Policy-aware score calibration ────────────────────────────────────
+
+export type PolicyBand = "auto_approve" | "review" | "auto_reject";
+
+export interface CalibrationPolicy {
+  approveThreshold: number;
+  rejectThreshold: number;
+  humanReviewThreshold: number;
+  biasCorrectionFactor?: number;
+}
+
+export interface CalibratedScoreResponse {
+  band: PolicyBand;
+  action: "approve" | "escalate" | "reject";
+  confidence: number;
+  needsHumanReview: boolean;
+  rawScore: number;
+}
+
 // ── Budget Accounting (BE-201, BE-202, BE-203, BE-204) ───────────────────────────
 
 export type BudgetEventType = 
