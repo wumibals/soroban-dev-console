@@ -447,16 +447,18 @@ model AiMetricSnapshot {
 }
 
 
-/// AI-930: Workflow recommendation for a contributor task.
-model WorkflowRecommendation {
-  id              String   @id @default(cuid())
-  taskId          String   @unique @map("task_id")
-  taskDescription String   @map("task_description")
-  recommendations Json
-  topWorkflow     String   @map("top_workflow")
-  modelVersion    String   @map("model_version")
-  createdAt       DateTime @default(now()) @map("created_at")
+/// AI-921: Cluster of related issues for maintainer triage.
+model IssueCluster {
+  id           String   @id @default(cuid())
+  clusterKey   String   @unique @map("cluster_key")
+  label        String
+  issueRefs    Json     @map("issue_refs")
+  theme        String
+  confidence   Float
+  modelVersion String   @map("model_version")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  @@index([taskId])
-  @@map("workflow_recommendations")
+  @@index([clusterKey])
+  @@map("issue_clusters")
 }
