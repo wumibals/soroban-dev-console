@@ -17,8 +17,10 @@ import { ReviewContextModule } from "./modules/review-context/review-context.mod
 import { BackgroundJobModule } from "./modules/jobs/background-job.module.js";
 import { WaveModule } from "./modules/wave/wave.module.js";
 import { BudgetModule } from "./modules/budget/budget.module.js";
-import { EvidencePackModule } from "./modules/evidence-pack/evidence-pack.module.js";
-import { AppealExplanationModule } from "./modules/appeal-explanation/appeal-explanation.module.js";
+import { TicketClassifierModule } from "./modules/ticket-classifier/ticket-classifier.module.js";
+import { ReviewSummarizerModule } from "./modules/review-summarizer/review-summarizer.module.js";
+import { BudgetExceptionModule } from "./modules/budget-exception/budget-exception.module.js";
+import { AiMonitorModule } from "./modules/ai-monitor/ai-monitor.module.js";
 
 @Module({
   imports: [
@@ -42,8 +44,11 @@ import { AppealExplanationModule } from "./modules/appeal-explanation/appeal-exp
     ReviewContextModule,
     BackgroundJobModule,
     WaveModule,
-    EvidencePackModule,
-    AppealExplanationModule,
+    BudgetModule,
+    TicketClassifierModule,
+    ReviewSummarizerModule,
+    BudgetExceptionModule,
+    AiMonitorModule,
   ]
 })
 export class AppModule {}
