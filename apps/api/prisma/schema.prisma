@@ -446,3 +446,19 @@ model AiMetricSnapshot {
   @@map("ai_metric_snapshots")
 }
 
+
+/// AI-927: Log analysis result from the assistant workflow.
+model LogAnalysisResult {
+  id               String   @id @default(cuid())
+  sessionId        String   @unique @map("session_id")
+  source           String
+  lineCount        Int      @map("line_count")
+  themes           Json
+  correlatedEvents Json     @map("correlated_events")
+  errorCount       Int      @map("error_count")
+  modelVersion     String   @map("model_version")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@map("log_analysis_results")
+}
