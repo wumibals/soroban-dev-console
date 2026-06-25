@@ -446,3 +446,16 @@ model AiMetricSnapshot {
   @@map("ai_metric_snapshots")
 }
 
+
+/// AI-922: Suggested test cases from pull request change diffs.
+model TestCaseSuggestion {
+  id           String   @id @default(cuid())
+  pullRequestId String  @map("pull_request_id")
+  suggestions  Json
+  diffSummary  String   @map("diff_summary")
+  modelVersion String   @map("model_version")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([pullRequestId])
+  @@map("test_case_suggestions")
+}
