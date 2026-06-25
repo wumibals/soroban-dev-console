@@ -446,3 +446,23 @@ model AiMetricSnapshot {
   @@map("ai_metric_snapshots")
 }
 
+
+/// AI-931: Escalation record for low-confidence AI output.
+model AiEscalation {
+  id                 String    @id @default(cuid())
+  outputId           String    @unique @map("output_id")
+  outputType         String    @map("output_type")
+  confidence         Float
+  decision           String
+  reason             String
+  requiresHumanReview Boolean  @default(false) @map("requires_human_review")
+  resolution         String?
+  resolvedBy         String?   @map("resolved_by")
+  resolvedAt         DateTime? @map("resolved_at")
+  modelVersion       String    @map("model_version")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  @@index([outputId])
+  @@index([requiresHumanReview, resolvedAt])
+  @@map("ai_escalations")
+}
