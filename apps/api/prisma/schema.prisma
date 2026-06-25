@@ -447,22 +447,18 @@ model AiMetricSnapshot {
 }
 
 
-/// AI-931: Escalation record for low-confidence AI output.
-model AiEscalation {
-  id                 String    @id @default(cuid())
-  outputId           String    @unique @map("output_id")
-  outputType         String    @map("output_type")
-  confidence         Float
-  decision           String
-  reason             String
-  requiresHumanReview Boolean  @default(false) @map("requires_human_review")
-  resolution         String?
-  resolvedBy         String?   @map("resolved_by")
-  resolvedAt         DateTime? @map("resolved_at")
-  modelVersion       String    @map("model_version")
-  createdAt          DateTime  @default(now()) @map("created_at")
+/// AI-927: Log analysis result from the assistant workflow.
+model LogAnalysisResult {
+  id               String   @id @default(cuid())
+  sessionId        String   @unique @map("session_id")
+  source           String
+  lineCount        Int      @map("line_count")
+  themes           Json
+  correlatedEvents Json     @map("correlated_events")
+  errorCount       Int      @map("error_count")
+  modelVersion     String   @map("model_version")
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  @@index([outputId])
-  @@index([requiresHumanReview, resolvedAt])
-  @@map("ai_escalations")
+  @@index([sessionId])
+  @@map("log_analysis_results")
 }
