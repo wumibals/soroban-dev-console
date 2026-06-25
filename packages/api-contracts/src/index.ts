@@ -403,46 +403,45 @@ export interface AppealTimingResult {
   appealDeadline: string;
 }
 
-// ── AI-206: Policy-aware score calibration ────────────────────────────────────
+// ── AI-210: Coordinated abuse pattern detection ───────────────────────────────
 
-export type PolicyBand = "auto_approve" | "review" | "auto_reject";
+export type AbuseEventKind =
+  | "appeal_submitted"
+  | "issue_claimed"
+  | "contributor_registered"
+  | "duplicate_submission"
+  | "rapid_resubmission";
 
-export interface CalibrationPolicy {
-  approveThreshold: number;
-  rejectThreshold: number;
-  humanReviewThreshold: number;
-  biasCorrectionFactor?: number;
+export type AbusePatternKind =
+  | "VELOCITY_CLUSTER"
+  | "APPEAL_FLOODING"
+  | "ISSUE_FARMING"
+  | "SHARED_METADATA"
+  | "DUPLICATE_APPEAL_CLUSTER";
+
+export type CoordinatedRiskLevel = "low" | "medium" | "high" | "critical";
+
+export interface AbuseEventPayload {
+  contributorId: string;
+  issueRef: string;
+  kind: AbuseEventKind;
+  occurredAt: string;
+  metadata?: Record<string, unknown>;
 }
 
-export interface CalibratedScoreResponse {
-  band: PolicyBand;
-  action: "approve" | "escalate" | "reject";
-  confidence: number;
-  needsHumanReview: boolean;
-  rawScore: number;
+export interface DetectedPatternSummary {
+  kind: AbusePatternKind;
+  contributorIds: string[];
+  issueRefs: string[];
+  description: string;
 }
 
-// ── AI-209: Model rollout controls ────────────────────────────────────────────
-
-export type RolloutMode = "pinned" | "canary" | "full";
-
-export interface RolloutConfig {
-  activeVersion: string;
-  stableVersion: string;
-  mode: RolloutMode;
-  canaryPercent?: number;
-}
-
-export interface RolloutResolution {
-  modelVersion: string;
-  mode: RolloutMode;
-  reason: string;
-}
-
-export interface ModelRolloutState {
-  current: RolloutConfig;
-  previous: RolloutConfig | null;
-  updatedAt: string;
+export interface CoordinatedAbuseReportResponse {
+  analysedEventCount: number;
+  patterns: DetectedPatternSummary[];
+  overallRisk: CoordinatedRiskLevel;
+  requiresHumanReview: boolean;
+  generatedAt: string;
 }
 
 // ── Budget Accounting (BE-201, BE-202, BE-203, BE-204) ───────────────────────────
