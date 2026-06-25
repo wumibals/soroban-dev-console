@@ -446,3 +446,19 @@ model AiMetricSnapshot {
   @@map("ai_metric_snapshots")
 }
 
+
+/// AI-921: Cluster of related issues for maintainer triage.
+model IssueCluster {
+  id           String   @id @default(cuid())
+  clusterKey   String   @unique @map("cluster_key")
+  label        String
+  issueRefs    Json     @map("issue_refs")
+  theme        String
+  confidence   Float
+  modelVersion String   @map("model_version")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([clusterKey])
+  @@map("issue_clusters")
+}
