@@ -75,6 +75,9 @@ jobs:
       - name: Dependency integrity
         run: npm run check-integrity
 
+      - name: Dependency policy gate
+        run: npx tsx scripts/check-dependency-policy.ts
+
       - name: Supply-chain verification
         run: |
           echo "## Supply-Chain Controls" >> $GITHUB_STEP_SUMMARY
